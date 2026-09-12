@@ -94,7 +94,11 @@ export async function run(env: Env): Promise<{ sent: number; skipped: number; er
 export default {
   async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext) { ctx.waitUntil(run(env)); },
   async fetch(request: Request, env: Env): Promise<Response> {
-    if (new URL(request.url).pathname === "/run") {
+    const pathname = new URL(request.url).pathname;
+    if (pathname === "/setup") {
+      return new Response(`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Slack RSS Notifier</title><style>body{font:16px system-ui;max-width:640px;margin:40px auto;padding:0 20px;color:#18243a}input,button{font:inherit;padding:12px;border-radius:8px;border:1px solid #ccd5e0}input{width:100%;box-sizing:border-box;margin:8px 0 12px}button{background:#f48120;color:#fff;border:0;font-weight:700;width:100%}pre{white-space:pre-wrap;background:#f4f6f8;padding:12px;border-radius:8px}</style><h1>Slack RSS Notifier</h1><p>管理トークンを入力すると、RSS取得とSlack通知を今すぐ実行できます。</p><form id="run"><input id="token" type="password" autocomplete="off" placeholder="ADMIN_TOKEN" required><button>今すぐ実行</button></form><pre id="result"></pre><script>document.querySelector('#run').addEventListener('submit',async e=>{e.preventDefault();const r=document.querySelector('#result');r.textContent='実行中…';try{const x=await fetch('/run',{method:'POST',headers:{Authorization:'Bearer '+document.querySelector('#token').value}});r.textContent=await x.text()}catch(err){r.textContent=String(err)}})</script>`, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+    }
+    if (pathname === "/run") {
       if (request.headers.get("Authorization") !== `Bearer ${env.ADMIN_TOKEN}`) return new Response("Unauthorized", { status: 401 });
       return Response.json(await run(env));
     }

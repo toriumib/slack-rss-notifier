@@ -20,6 +20,8 @@ npx wrangler secret put ADMIN_TOKEN
 5. `npm install`、`npx wrangler types`、`npm test`を実行
 6. `npx wrangler deploy --dry-run`で確認してから`npx wrangler deploy`
 
+デプロイ後はスマホで`https://<worker-name>.<account>.workers.dev/setup`を開き、`ADMIN_TOKEN`を入力して「今すぐ実行」を押すと動作確認できます。
+
 `SLACK_USER_IDS`には友達を含む通知先のSlack User IDをカンマ区切りで指定します。同じワークスペースの友達なら、友達にSlackプロフィールから「メンバーIDをコピー」してもらい、そのIDを管理者がSecretへ追加するだけです。詳しい手順、フィード追加方法、Cron変更、手動実行、トラブルシューティングは[Worker README](assets/worker-template/README.md)を読んでください。
 
 ## プラグインとして使う

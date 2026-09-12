@@ -118,6 +118,8 @@ $headers = @{ Authorization = "Bearer <ADMIN_TOKEN>" }
 Invoke-RestMethod -Method Post -Headers $headers https://<worker-name>.<account>.workers.dev/run
 ```
 
+スマホからは`https://<worker-name>.<account>.workers.dev/setup`を開き、`ADMIN_TOKEN`を入力して「今すぐ実行」を押せます。トークンはURLへ入れず、ブラウザの通信ヘッダーだけで送信します。
+
 成功すると`sent`、`skipped`、`errors`が返ります。通知されない場合は、SlackアプリのScope、Slack User ID、Worker Logs、フィードURLの順に確認してください。
 
 ## ファイル構成

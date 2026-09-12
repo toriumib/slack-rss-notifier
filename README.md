@@ -13,14 +13,14 @@
 
 ```powershell
 npx wrangler secret put SLACK_BOT_TOKEN
-npx wrangler secret put SLACK_USER_ID
+npx wrangler secret put SLACK_USER_IDS
 npx wrangler secret put ADMIN_TOKEN
 ```
 
 5. `npm install`、`npx wrangler types`、`npm test`を実行
 6. `npx wrangler deploy --dry-run`で確認してから`npx wrangler deploy`
 
-詳しい手順、フィード追加方法、Cron変更、手動実行、トラブルシューティングは[Worker README](assets/worker-template/README.md)を読んでください。
+`SLACK_USER_IDS`には友達を含む通知先のSlack User IDをカンマ区切りで指定します。同じワークスペースの友達なら、友達にSlackプロフィールから「メンバーIDをコピー」してもらい、そのIDを管理者がSecretへ追加するだけです。詳しい手順、フィード追加方法、Cron変更、手動実行、トラブルシューティングは[Worker README](assets/worker-template/README.md)を読んでください。
 
 ## プラグインとして使う
 

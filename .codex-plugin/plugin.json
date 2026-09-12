@@ -1,0 +1,18 @@
+{
+  "name": "slack-rss-notifier",
+  "version": "0.1.0",
+  "description": "Monitor gadget and tech RSS feeds on Cloudflare Workers and deliver new items to a personal Slack DM.",
+  "author": {
+    "name": "Local developer"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Slack RSS Notifier",
+    "shortDescription": "Send gadget news RSS updates to a personal Slack DM.",
+    "longDescription": "Scaffold and operate a Cloudflare Worker that polls gadget and tech RSS feeds on a cron schedule, deduplicates items with KV, and posts new articles to a Slack DM using a bot token.",
+    "developerName": "Local developer",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": "Set up Slack RSS Notifier for gadget news and send new articles to my Slack DM."
+  }
+}

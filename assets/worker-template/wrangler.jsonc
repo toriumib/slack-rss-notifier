@@ -1,0 +1,20 @@
+{
+  "name": "slack-rss-notifier",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-12",
+  "observability": {
+    "enabled": true,
+    "traces": { "enabled": true }
+  },
+  "triggers": {
+    "crons": ["0 * * * *"]
+  },
+  "kv_namespaces": [
+    { "binding": "RSS_STATE", "id": "REPLACE_WITH_KV_NAMESPACE_ID" }
+  ],
+  "vars": {
+    "POLL_CRON": "0 * * * *",
+    "BOOTSTRAP_SKIP_EXISTING": "true",
+    "FEEDS": "[{\"name\":\"The Verge\",\"url\":\"https://www.theverge.com/rss/index.xml\"},{\"name\":\"Engadget\",\"url\":\"https://www.engadget.com/rss.xml\"},{\"name\":\"TechCrunch\",\"url\":\"https://techcrunch.com/feed/\"},{\"name\":\"9to5Google\",\"url\":\"https://9to5google.com/feed/\"},{\"name\":\"ギズモード・ジャパン\",\"url\":\"https://www.gizmodo.jp/index.xml\"},{\"name\":\"AV Watch\",\"url\":\"https://av.watch.impress.co.jp/data/rss/1.0/avw.rdf\"},{\"name\":\"ITmedia Mobile\",\"url\":\"https://rss.itmedia.co.jp/rss/2.0/mobile.xml\"}]"
+  }
+}

@@ -1,7 +1,7 @@
 export interface Env {
   RSS_STATE: KVNamespace;
   SLACK_BOT_TOKEN: string;
-  SLACK_USER_ID: string;
+  SLACK_USER_IDS: string;
   ADMIN_TOKEN: string;
   FEEDS: string;
   BOOTSTRAP_SKIP_EXISTING: string;
@@ -12,6 +12,7 @@ type Item = { id: string; title: string; url: string; published?: string };
 
 const MAX_ITEMS_PER_FEED = 5;
 const MAX_SEEN_PER_FEED = 100;
+const MAX_ITEMS_PER_RUN = 20;
 
 function decodeXml(value: string): string {
   return value.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
@@ -46,15 +47,15 @@ async function slack(env: Env, method: string, body: unknown): Promise<void> {
   if (!response.ok || !result.ok) throw new Error(`Slack ${method} failed: ${result.error ?? response.status}`);
 }
 
-async function notify(env: Env, feed: Feed, item: Item): Promise<void> {
+async function notify(env: Env, userId: string, items: Array<{ feed: Feed; item: Item }>): Promise<void> {
   const dm = await fetch("https://slack.com/api/conversations.open", {
     method: "POST",
     headers: { Authorization: `Bearer ${env.SLACK_BOT_TOKEN}`, "Content-Type": "application/json; charset=utf-8" },
-    body: JSON.stringify({ users: env.SLACK_USER_ID })
+    body: JSON.stringify({ users: userId })
   });
   const dmResult = await dm.json() as { ok?: boolean; error?: string; channel?: { id?: string } };
   if (!dm.ok || !dmResult.ok || !dmResult.channel?.id) throw new Error(`Slack conversations.open failed: ${dmResult.error ?? dm.status}`);
-  const text = `*${feed.name}*\n<${item.url}|${item.title}>${item.published ? `\n_${item.published}_` : ""}`;
+  const text = `*ガジェットニュース新着 (${items.length}件)*\n\n${items.map(({ feed, item }) => `*${feed.name}*\n<${item.url}|${item.title}>${item.published ? `\n_${item.published}_` : ""}`).join("\n\n")}`;
   await slack(env, "chat.postMessage", { channel: dmResult.channel.id, text, unfurl_links: false });
 }
 
@@ -65,6 +66,7 @@ function feedsFrom(env: Env): Feed[] {
 
 export async function run(env: Env): Promise<{ sent: number; skipped: number; errors: string[] }> {
   const result = { sent: 0, skipped: 0, errors: [] as string[] };
+  const freshItems: Array<{ feed: Feed; item: Item }> = [];
   for (const feed of feedsFrom(env)) {
     try {
       const response = await fetch(feed.url, { headers: { "User-Agent": "slack-rss-notifier/1.0" } });
@@ -75,10 +77,16 @@ export async function run(env: Env): Promise<{ sent: number; skipped: number; er
       const fresh = items.filter((item) => !seen.includes(item.id));
       const shouldSkip = env.BOOTSTRAP_SKIP_EXISTING !== "false" && seen.length === 0;
       if (shouldSkip) { await env.RSS_STATE.put(key, JSON.stringify(items.map((item) => item.id).slice(0, MAX_SEEN_PER_FEED))); result.skipped += fresh.length; continue; }
-      for (const item of fresh.reverse()) { await notify(env, feed, item); result.sent++; }
+      for (const item of fresh.reverse()) freshItems.push({ feed, item });
       await env.RSS_STATE.put(key, JSON.stringify([...items.map((item) => item.id), ...seen].slice(0, MAX_SEEN_PER_FEED)));
     } catch (error) { result.errors.push(`${feed.name}: ${error instanceof Error ? error.message : "unknown error"}`); }
   }
+  const recipients = env.SLACK_USER_IDS.split(",").map((id) => id.trim()).filter(Boolean);
+  const batch = freshItems.slice(0, MAX_ITEMS_PER_RUN);
+  if (batch.length && recipients.length) {
+    for (const userId of recipients) { try { await notify(env, userId, batch); result.sent += batch.length; } catch (error) { result.errors.push(`Slack user ${userId}: ${error instanceof Error ? error.message : "unknown error"}`); } }
+  } else if (batch.length && !recipients.length) result.errors.push("SLACK_USER_IDS is empty");
+  if (freshItems.length > MAX_ITEMS_PER_RUN) result.errors.push(`capped ${freshItems.length - MAX_ITEMS_PER_RUN} items this run`);
   console.log(JSON.stringify({ event: "rss_run", sent: result.sent, skipped: result.skipped, errors: result.errors.length }));
   return result;
 }

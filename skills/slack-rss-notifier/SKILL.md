@@ -17,13 +17,13 @@ Use the bundled Worker template in `assets/worker-template/` when the user asks 
 
 ```text
 wrangler secret put SLACK_BOT_TOKEN
-wrangler secret put SLACK_USER_ID
+wrangler secret put SLACK_USER_IDS
 wrangler secret put ADMIN_TOKEN
 ```
 
 6. Run `wrangler types`, then `npm test` and `wrangler deploy` from the Worker project.
 
-`ADMIN_TOKEN` protects the manual `/run` endpoint. Keep it set in production. `GET /` is a non-sensitive health response. The scheduled handler skips already-seen items and limits each feed to the newest five entries so one bad or unusually large feed cannot create an unbounded send.
+`ADMIN_TOKEN` protects the manual `/run` endpoint. Keep it set in production. `GET /` is a non-sensitive health response. The scheduled handler skips already-seen items and limits each feed to the newest five entries so one bad or unusually large feed cannot create an unbounded send. For a small group in one Slack workspace, put comma-separated Slack User IDs in `SLACK_USER_IDS`; the Worker sends one digest DM per user per run.
 
 ## Configuration behavior
 
